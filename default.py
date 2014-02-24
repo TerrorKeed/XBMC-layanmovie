@@ -113,7 +113,7 @@ if mode == 'main':
     try:
       response = urllib2.urlopen(req)
     except urllib2.URLError, e:
-      xbmcgui.Dialog().ok(addon.getLocalizedString(30000), 'Login information is incorrect or permission is denied')
+      xbmcgui.Dialog().ok(addon.getLocalizedString(30000), addon.getLocalizedString(30001))
       log(str(e), True)
 
 
@@ -126,14 +126,14 @@ if mode == 'main':
                          response_data, re.DOTALL):
         url,title = r.groups()
         addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url,title)
+        addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url + '?orderby=title',title + addon.getLocalizedString(30002))
     else:
       for r in re.finditer('<li id=[^\s]+ class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-\d+"><a href="([^\"]+)">([^\<]+)</a></li>',
                          response_data, re.DOTALL):
         url,title = r.groups()
         for r in re.finditer('english', url, re.DOTALL):
           addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url,title)
-#        for r in re.finditer('English', title, re.DOTALL):
-#          addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url,title)
+          addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url + '?orderby=title',title + ' ' +addon.getLocalizedString(30002))
 
 
 #play a URL that is passed in (presumely requires authorizated session)
@@ -148,7 +148,7 @@ elif mode == 'subpage':
     try:
       response = urllib2.urlopen(req)
     except urllib2.URLError, e:
-      xbmcgui.Dialog().ok(addon.getLocalizedString(30000), 'Login information is incorrect or permission is denied')
+      xbmcgui.Dialog().ok(addon.getLocalizedString(30000), addon.getLocalizedString(30001))
       log(str(e), True)
 
 
@@ -157,12 +157,26 @@ elif mode == 'subpage':
     log('response %s' % str(response_data)) 
     log('info %s' % str(response.info())) 
 
-    for r in re.finditer('title="([^\"]+)" href="([^\"]+)">',
-                         response_data, re.DOTALL):
-        title,url = r.groups()
-        title = re.sub('Watch ', '', title)
-        title = re.sub('\).*', ')', title)
-        addVideo('plugin://plugin.video.layanmovie?mode=videopage&url=' + url, { 'title' : title , 'plot' : title },title.decode('utf-8'))
+#    match = re.compile('previouspostslink href="(.+?)"', re.DOTALL).findall(response_data)   
+#    for url in match:  
+#      addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url,'<< ' + addon.getLocalizedString(30007) + ' <<')
+
+
+    match = re.compile('id=post.+?clip-link.+?title="(.+?)" href="(.+?)".+?>.+?<.+?src="(.+?)"', re.DOTALL).findall(response_data)        
+    for title, url, img in match:
+      title = re.sub('watch and download', '', title, flags=re.I)
+      title = re.sub('Full', '', title, flags=re.I)
+      title = re.sub('Online', '', title, flags=re.I)
+      title = re.sub('Watch ', '', title, flags=re.I)
+      title = re.sub('movie', '', title, flags=re.I)
+      title = re.sub('\).*', ')', title)
+      addVideo('plugin://plugin.video.layanmovie?mode=videopage&url=' + url, { 'title' : title , 'plot' : title },title.decode('utf-8'), img=img)
+
+    match = re.compile('nextpostslink href="(.+?)"', re.DOTALL).findall(response_data)   
+    for url in match:  
+      addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url,'>> '+addon.getLocalizedString(30006)+ ' >>')
+
+
 
 #play a video given its exact-title
 elif mode == 'videopage':
