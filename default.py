@@ -26,12 +26,12 @@ import xbmc, xbmcgui, xbmcplugin, xbmcaddon
 
 
 
-#helper methods   
+#helper methods
 def log(msg, err=False):
     if err:
-        xbmc.log(addon.getAddonInfo('name') + ': ' + msg, xbmc.LOGERROR)    
+        xbmc.log(addon.getAddonInfo('name') + ': ' + msg, xbmc.LOGERROR)
     else:
-        xbmc.log(addon.getAddonInfo('name') + ': ' + msg, xbmc.LOGDEBUG)    
+        xbmc.log(addon.getAddonInfo('name') + ': ' + msg, xbmc.LOGDEBUG)
 
 def parse_query(query):
     queries = cgi.parse_qs(query)
@@ -41,18 +41,18 @@ def parse_query(query):
     q['mode'] = q.get('mode', 'main')
     return q
 
-def addVideo(url, infolabels, label, img='', fanart='', total_items=0, 
+def addVideo(url, infolabels, label, img='', fanart='', total_items=0,
                    cm=[], cm_replace=False):
     infolabels = decode_dict(infolabels)
 #    log('adding video: %s - %s' % (infolabels['title'].decode('utf-8','ignore'), url))
-    listitem = xbmcgui.ListItem(label, iconImage=img, 
+    listitem = xbmcgui.ListItem(label, iconImage=img,
                                 thumbnailImage=img)
     listitem.setInfo('video', infolabels)
     listitem.setProperty('IsPlayable', 'true')
     listitem.setProperty('fanart_image', fanart)
     if cm:
         listitem.addContextMenuItems(cm, cm_replace)
-    xbmcplugin.addDirectoryItem(plugin_handle, url, listitem, 
+    xbmcplugin.addDirectoryItem(plugin_handle, url, listitem,
                                 isFolder=False, totalItems=total_items)
 
 def addDirectory(url, title, img='', fanart='', total_items=0):
@@ -61,7 +61,7 @@ def addDirectory(url, title, img='', fanart='', total_items=0):
     if not fanart:
         fanart = addon.getAddonInfo('path') + '/fanart.jpg'
     listitem.setProperty('fanart_image', fanart)
-    xbmcplugin.addDirectoryItem(plugin_handle, url, listitem, 
+    xbmcplugin.addDirectoryItem(plugin_handle, url, listitem,
                                 isFolder=True, totalItems=total_items)
 
 #http://stackoverflow.com/questions/1208916/decoding-html-entities-with-python/1208931#1208931
@@ -89,6 +89,24 @@ plugin_handle = int(sys.argv[1])
 plugin_queries = parse_query(sys.argv[2][1:])
 
 addon = xbmcaddon.Addon(id='plugin.video.layanmovie')
+
+try:
+
+    remote_debugger = addon.getSetting('remote_debugger')
+    remote_debugger_host = addon.getSetting('remote_debugger_host')
+
+    # append pydev remote debugger
+    if remote_debugger == 'true':
+        # Make pydev debugger works for auto reload.
+        # Note pydevd module need to be copied in XBMC\system\python\Lib\pysrc
+        import pysrc.pydevd as pydevd
+        # stdoutToServer and stderrToServer redirect stdout and stderr to eclipse console
+        pydevd.settrace(remote_debugger_host, stdoutToServer=True, stderrToServer=True)
+except ImportError:
+    sys.stderr.write("Error: " + "You must add org.python.pydev.debug.pysrc to your PYTHONPATH.")
+    sys.exit(1)
+except :
+    pass
 
 
 # retrieve settings
@@ -118,9 +136,7 @@ if mode == 'main':
 
 
     response_data = response.read()
-#    response_data.decode('utf-8')
-    log('response %s' % str(response_data)) 
-    log('info %s' % str(response.info())) 
+
     if languageFilter == 'false':
       for r in re.finditer('<li id=[^\s]+ class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-\d+"><a href="([^\"]+)">([^\<]+)</a></li>',
                          response_data, re.DOTALL):
@@ -139,7 +155,6 @@ if mode == 'main':
 #play a URL that is passed in (presumely requires authorizated session)
 elif mode == 'subpage':
     url = plugin_queries['url']
-    log('play url: ' + url)
 
     header = { 'User-Agent' : user_agent }
 
@@ -154,15 +169,13 @@ elif mode == 'subpage':
 
     response_data = response.read()
 
-    log('response %s' % str(response_data)) 
-    log('info %s' % str(response.info())) 
 
-#    match = re.compile('previouspostslink href="(.+?)"', re.DOTALL).findall(response_data)   
-#    for url in match:  
+#    match = re.compile('previouspostslink href="(.+?)"', re.DOTALL).findall(response_data)
+#    for url in match:
 #      addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url,'<< ' + addon.getLocalizedString(30007) + ' <<')
 
 
-    match = re.compile('id=post.+?clip-link.+?title="(.+?)" href="(.+?)".+?>.+?<.+?src="(.+?)"', re.DOTALL).findall(response_data)        
+    match = re.compile('id=post.+?clip-link.+?title="(.+?)" href="(.+?)".+?>.+?<.+?src="(.+?)"', re.DOTALL).findall(response_data)
     for title, url, img in match:
       title = re.sub('watch and download', '', title, flags=re.I)
       title = re.sub('Full', '', title, flags=re.I)
@@ -172,8 +185,8 @@ elif mode == 'subpage':
       title = re.sub('\).*', ')', title)
       addVideo('plugin://plugin.video.layanmovie?mode=videopage&url=' + url, { 'title' : title , 'plot' : title },title.decode('utf-8'), img=img)
 
-    match = re.compile('nextpostslink href="(.+?)"', re.DOTALL).findall(response_data)   
-    for url in match:  
+    match = re.compile('nextpostslink href="(.+?)"', re.DOTALL).findall(response_data)
+    for url in match:
       addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url,'>> '+addon.getLocalizedString(30006)+ ' >>')
 
 
@@ -182,7 +195,6 @@ elif mode == 'subpage':
 elif mode == 'videopage':
     url = plugin_queries['url']
 #    title = plugin_queries['title']
-    log('play url: ' + url)
 
     header = { 'User-Agent' : user_agent }
 
@@ -197,16 +209,13 @@ elif mode == 'videopage':
 
     response_data = response.read()
 
-#    log('response %s' % str(response_data)) 
-    log('info %s' % str(response.info())) 
-
 
     for r in re.finditer('<iframe src="([^\"]+)" (width=)',
                          response_data, re.DOTALL):
         url,width = r.groups()
         item = xbmcgui.ListItem(path='plugin://plugin.video.gdrive?mode=streamurl&url=' + url)
         log('play url: ' + 'plugin://plugin.video.gdrive?mode=streamurl&url=' + url)
-        xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item) 
+        xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
 
 #        addVideo('plugin://plugin.video.gdrive?mode=streamurl&url=' + url,
 #                             { 'title' : title , 'plot' : title },
@@ -214,6 +223,6 @@ elif mode == 'videopage':
 
 
 
-     
+
 xbmcplugin.endOfDirectory(plugin_handle)
 
