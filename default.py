@@ -183,7 +183,7 @@ elif mode == 'subpage':
       title = re.sub('Watch ', '', title, flags=re.I)
       title = re.sub('movie', '', title, flags=re.I)
       title = re.sub('\).*', ')', title)
-      addVideo('plugin://plugin.video.layanmovie?mode=videopage&url=' + url, { 'title' : title , 'plot' : title },title.decode('utf-8'), img=img)
+      addVideo('plugin://plugin.video.layanmovie?mode=videopage&url=' + url, { 'title' : title , 'plot' : title },title, img=img)
 
     match = re.compile('nextpostslink href="(.+?)"', re.DOTALL).findall(response_data)
     for url in match:
