@@ -141,15 +141,15 @@ if mode == 'main':
       for r in re.finditer('<li id=[^\s]+ class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-\d+"><a href="([^\"]+)">([^\<]+)</a></li>',
                          response_data, re.DOTALL):
         url,title = r.groups()
-        addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url,title)
-        addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url + '?orderby=title',title + addon.getLocalizedString(30002))
+        addDirectory('plugin://plugin.video.layanmovie/?mode=subpage&url=' + url,title)
+        addDirectory('plugin://plugin.video.layanmovie/?mode=subpage&url=' + url + '?orderby=title',title + addon.getLocalizedString(30002))
     else:
       for r in re.finditer('<li id=[^\s]+ class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-\d+"><a href="([^\"]+)">([^\<]+)</a></li>',
                          response_data, re.DOTALL):
         url,title = r.groups()
         for r in re.finditer('english', url, re.DOTALL):
-          addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url,title)
-          addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url + '?orderby=title',title + ' ' +addon.getLocalizedString(30002))
+          addDirectory('plugin://plugin.video.layanmovie/?mode=subpage&url=' + url,title)
+          addDirectory('plugin://plugin.video.layanmovie/?mode=subpage&url=' + url + '?orderby=title',title + ' ' +addon.getLocalizedString(30002))
 
 
 #play a URL that is passed in (presumely requires authorizated session)
@@ -183,11 +183,11 @@ elif mode == 'subpage':
       title = re.sub('Watch ', '', title, flags=re.I)
       title = re.sub('movie', '', title, flags=re.I)
       title = re.sub('\).*', ')', title)
-      addVideo('plugin://plugin.video.layanmovie?mode=videopage&url=' + url, { 'title' : title , 'plot' : title },title, img=img)
+      addVideo('plugin://plugin.video.layanmovie/?mode=videopage&url=' + url, { 'title' : title , 'plot' : title },title, img=img)
 
     match = re.compile('nextpostslink href="(.+?)"', re.DOTALL).findall(response_data)
     for url in match:
-      addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url,'>> '+addon.getLocalizedString(30006)+ ' >>')
+      addDirectory('plugin://plugin.video.layanmovie/?mode=subpage&url=' + url,'>> '+addon.getLocalizedString(30006)+ ' >>')
 
 
 
@@ -213,8 +213,8 @@ elif mode == 'videopage':
     for r in re.finditer('<iframe src="([^\"]+)" (width=)',
                          response_data, re.DOTALL):
         url,width = r.groups()
-        item = xbmcgui.ListItem(path='plugin://plugin.video.gdrive?mode=streamurl&url=' + url)
-        log('play url: ' + 'plugin://plugin.video.gdrive?mode=streamurl&url=' + url)
+        item = xbmcgui.ListItem(path='plugin://plugin.video.gdrive/?mode=streamurl&url=' + url)
+        log('play url: ' + 'plugin://plugin.video.gdrive/?mode=streamurl&url=' + url)
         xbmcplugin.setResolvedUrl(int(sys.argv[1]), True, item)
 
 #        addVideo('plugin://plugin.video.gdrive?mode=streamurl&url=' + url,
