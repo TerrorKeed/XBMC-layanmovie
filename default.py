@@ -175,7 +175,7 @@ elif mode == 'subpage':
 #      addDirectory('plugin://plugin.video.layanmovie?mode=subpage&url=' + url,'<< ' + addon.getLocalizedString(30007) + ' <<')
 
 
-    match = re.compile('id=post.+?clip-link.+?title="(.+?)" href="(.+?)".+?>.+?<.+?src="(.+?)"', re.DOTALL).findall(response_data)
+    match = re.compile('class="clip-link".+?title="(.+?)" href="(.+?)".+?>.+?<.+?src="(.+?)"', re.DOTALL).findall(response_data)
     for title, url, img in match:
       title = re.sub('watch and download', '', title, flags=re.I)
       title = re.sub('Full', '', title, flags=re.I)

@@ -1,3 +1,5 @@
+Version 0.0.3.x
+- fix site-change (fixes blank pages)
 - fix plugin URLs to make compliant with plugins like PseudoTV Live
 - remove explicit UTF-8 calls [Error on load public url #2]
 - add remote-debugger code
